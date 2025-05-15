@@ -1,0 +1,212 @@
+version: '3.8'
+
+services:
+  # --- Elasticsearch Nodes ---
+  es-node01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4 # Chọn phiên bản ES bạn muốn
+    container_name: es-node01
+    environment:
+      - node.name=es-node01
+      - cluster.name=my-search-cluster
+      - discovery.seed_hosts=es-node01,es-node02,es-node03,es-node04,es-node05
+      - cluster.initial_master_nodes=es-node01,es-node02,es-node03
+      - bootstrap.memory_lock=true # Quan trọng cho performance, cần cấu hình ulimits trên host
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Điều chỉnh RAM cho ES, tùy theo tài nguyên máy
+    ulimits: # Yêu cầu cho bootstrap.memory_lock=true
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data # Volume để lưu trữ dữ liệu ES
+      - ./elasticsearch/es-node01/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro # Bỏ comment nếu dùng file config riêng
+    ports:
+      - "9201:9200" # Ánh xạ cổng để truy cập từng node từ host (tùy chọn, chủ yếu để debug)
+      - "9301:9300"
+    networks:
+      - searchnet
+
+  es-node02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: es-node02
+    environment:
+      - node.name=es-node02
+      - cluster.name=my-search-cluster
+      - discovery.seed_hosts=es-node01,es-node02,es-node03,es-node04,es-node05
+      - cluster.initial_master_nodes=es-node01,es-node02,es-node03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+        - ./elasticsearch/es-node02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+        - esdata02:/usr/share/elasticsearch/data
+    ports:
+      - "9202:9200"
+      - "9302:9300"
+    networks:
+      - searchnet
+    depends_on:
+      - es-node01
+
+  # --- Định nghĩa tương tự cho es-node03, es-node04, es-node05 ---
+  # Đảm bảo thay đổi container_name, node.name, volumes (esdata0X), và ports (920X, 930X)
+  es-node03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: es-node03
+    environment:
+      - node.name=es-node03
+      - cluster.name=my-search-cluster
+      - discovery.seed_hosts=es-node01,es-node02,es-node03,es-node04,es-node05
+      - cluster.initial_master_nodes=es-node01,es-node02,es-node03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata03:/usr/share/elasticsearch/data
+      - ./elasticsearch/es-node03/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9203:9200"
+      - "9303:9300"
+    networks:
+      - searchnet
+    depends_on:
+      - es-node01
+      - es-node02
+
+  es-node04:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: es-node04
+    environment:
+      - node.name=es-node04
+      - cluster.name=my-search-cluster
+      - discovery.seed_hosts=es-node01,es-node02,es-node03,es-node04,es-node05
+      # cluster.initial_master_nodes không cần cho node này nếu nó không phải là master-eligible ban đầu
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata04:/usr/share/elasticsearch/data
+      - ./elasticsearch/es-node04/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9204:9200"
+      - "9304:9300"
+    networks:
+      - searchnet
+    depends_on:
+      - es-node01
+      - es-node02
+      - es-node03
+
+  es-node05:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: es-node05
+    environment:
+      - node.name=es-node05
+      - cluster.name=my-search-cluster
+      - discovery.seed_hosts=es-node01,es-node02,es-node03,es-node04,es-node05
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - esdata05:/usr/share/elasticsearch/data
+      - ./elasticsearch/es-node05/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9205:9200"
+      - "9305:9300"
+    networks:
+      - searchnet
+    depends_on:
+      - es-node01
+      - es-node02
+      - es-node03
+      - es-node04
+
+  # --- Load Balancer (Nginx) ---
+  loadbalancer:
+    # build: ./loadbalancer # Nếu bạn có Dockerfile tùy chỉnh cho Nginx
+    image: nginx:alpine
+    container_name: nginx-lb
+    volumes:
+      - ./loadbalancer/nginx.conf:/etc/nginx/nginx.conf:ro # :ro là read-only
+    ports:
+      - "8080:80" # Webapp sẽ gọi cổng 8080 của host, Nginx lắng nghe trên cổng 80 trong container
+    networks:
+      - searchnet
+    depends_on: # Đảm bảo các node ES khởi động trước (container start, không đảm bảo service ready)
+      - es-node01
+      - es-node02
+      - es-node03
+      - es-node04
+      - es-node05
+
+  # --- MongoDB ---
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db # Volume để lưu trữ dữ liệu MongoDB
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=trungcao # Thay bằng user của bạn
+      - MONGO_INITDB_ROOT_PASSWORD=admin # Thay bằng password của bạn
+    networks:
+      - searchnet
+
+  # --- Web Application (Node.js) ---
+  webapp:
+    build: ./webapp # Đường dẫn đến thư mục chứa Dockerfile của webapp
+    container_name: search-webapp
+    ports:
+      - "3000:3000" # Ánh xạ cổng 3000 của host tới cổng 3000 của webapp
+    environment:
+      - MONGODB_URI=mongodb://trungcao:admin@mongo:27017/my_search_db?authSource=admin
+      - ELASTICSEARCH_HOST=http://loadbalancer 
+      - JWT_SECRET=Op9g4ZK6k5NLZxGrNRGzR4sU1cLh5uU8yo2Nmso1vhcsHwhlJX8fBzK2UnzOZ5zj # Cực kỳ quan trọng, phải nhớ trung ơi
+      - NODE_ENV=development
+    volumes:
+      - ./webapp:/usr/src/app # Mount code vào container để live reload khi phát triển
+      - /usr/src/app/node_modules # Để không bị ghi đè bởi local node_modules
+    networks:
+      - searchnet
+    depends_on:
+      - mongo
+      - loadbalancer # Webapp phụ thuộc vào LB và Mongo
+
+volumes: # Định nghĩa các named volumes để dữ liệu được lưu trữ bền vững
+  esdata01:
+  esdata02:
+  esdata03:
+  esdata04:
+  esdata05:
+  mongodata:
+
+networks: # Định nghĩa network để các container có thể giao tiếp với nhau qua tên service
+  searchnet:
+    driver: bridge

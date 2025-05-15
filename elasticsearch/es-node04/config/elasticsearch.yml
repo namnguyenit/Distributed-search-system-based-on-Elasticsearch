@@ -1,0 +1,18 @@
+cluster.name: "my-search-cluster"
+node.name: "es-node04"
+# node.roles: [ master, data, ingest, ml ] # Vẫn có thể là master-eligible
+
+network.host: "0.0.0.0"
+http.port: 9200
+transport.port: 9300
+
+discovery.seed_hosts: ["es-node01:9300", "es-node02:9300", "es-node03:9300", "es-node04:9300", "es-node05:9300"]
+# cluster.initial_master_nodes vẫn nên được đặt giống nhau cho nhất quán,
+# mặc dù node này không nằm trong danh sách khởi tạo ban đầu.
+# Nó sẽ bỏ qua thiết lập này nếu cụm đã được hình thành.
+cluster.initial_master_nodes: ["es-node01", "es-node02", "es-node03"]
+
+gateway.recover_after_nodes: 3
+# gateway.recover_after_master_nodes: 2
+
+# bootstrap.memory_lock: true
