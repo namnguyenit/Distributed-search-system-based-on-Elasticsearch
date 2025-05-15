@@ -1,0 +1,107 @@
+.admin-layout {
+    display: flex;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-right: 1px solid #dee2e6;
+    min-height: calc(100vh - 60px - 2rem - 40px); /* viewport height - navbar - footer - container padding */
+}
+
+.admin-sidebar h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.admin-sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.admin-sidebar ul li a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #337ab7;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.admin-sidebar ul li a:hover, .admin-sidebar ul li a.active {
+    background-color: #337ab7;
+    color: #fff;
+}
+
+.admin-main-content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.admin-main-content h1 {
+    margin-bottom: 20px;
+}
+
+/* Admin Dashboard Quick Stats */
+.quick-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.stat-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    flex-basis: 200px; /* Chiều rộng cơ sở */
+    flex-grow: 1;
+    text-align: center;
+}
+.stat-card h3 {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: #555;
+}
+.stat-card p {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #337ab7;
+}
+
+/* Node Status & User List Table */
+#nodeStatusContainer table, #userListContainer table, #requestStatsContainer table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+#nodeStatusContainer th, #nodeStatusContainer td,
+#userListContainer th, #userListContainer td,
+#requestStatsContainer th, #requestStatsContainer td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+#nodeStatusContainer th, #userListContainer th, #requestStatsContainer th {
+    background-color: #f2f2f2;
+}
+.status-green { color: green; font-weight: bold; }
+.status-yellow { color: orange; font-weight: bold; }
+.status-red { color: red; font-weight: bold; }
+
+/* User Management Actions */
+.user-actions button, .user-actions select {
+    margin-right: 5px;
+    padding: 5px 8px;
+    font-size: 0.9em;
+}
+.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px;
+}

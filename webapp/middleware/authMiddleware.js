@@ -24,18 +24,18 @@ const jwt = require('jsonwebtoken');
                     req.user = user; // Gắn object user đầy đủ
                     return next();
                 }).catch(err => {
-                    console.error("Error finding user by token ID:", err);
+                    console.error("Lỗi khi tìm kiếm người dùng bằng token ID:", err);
                     return res.status(500).json({ message: "Error verifying authentication." });
                 });
             } catch (err) {
-                console.error("JWT Verification Error:", err.message);
-                return res.status(401).json({ message: 'Not authenticated. Invalid token.' });
+                console.error("Lỗi xác thực JWT", err.message);
+                return res.status(401).json({ message: 'Chưa xác thực. Token không hợp lệ' });
             }
         } else {
             // Đối với web app dùng EJS, thường sẽ redirect về trang login
             res.redirect('/auth/login');
             // Đối với API, trả về lỗi JSON
-            return res.status(401).json({ message: 'Not authenticated. Please log in.'});
+            return res.status(401).json({ message: 'Chưa xác thực. Hãy đăng nhập' });
         }
     };
 

@@ -1,0 +1,9 @@
+</div> <footer>
+    <p>&copy; <%= new Date().getFullYear() %> Dự án Hệ thống Tìm kiếm Phân tán. Thực hiện bởi [Tên của bạn].</p>
+</footer>
+<script src="/js/main.js"></script>
+<% if (typeof isAdminPage !== 'undefined' && isAdminPage) { %>
+    <script src="/js/admin.js"></script>
+<% } %>
+</body>
+</html>

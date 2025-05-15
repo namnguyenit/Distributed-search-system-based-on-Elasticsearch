@@ -1,0 +1,20 @@
+<%- include('partials/header', { title: 'Tìm kiếm Sản phẩm' }) %>
+
+<main class="main-content">
+    <section class="search-section">
+        <h1>Tìm kiếm sản phẩm bạn mong muốn</h1>
+        <form id="searchForm">
+            <input type="text" id="searchInput" name="q" placeholder="Nhập tên sản phẩm, mô tả..." autocomplete="off">
+            <button type="submit">Tìm kiếm</button>
+        </form>
+        <div id="suggestionsContainer">
+            </div>
+    </section>
+
+    <section class="featured-products">
+        <h2>Sản phẩm nổi bật</h2>
+        <p>Nội dung sản phẩm nổi bật...</p>
+    </section>
+</main>
+
+<%- include('partials/footer') %>

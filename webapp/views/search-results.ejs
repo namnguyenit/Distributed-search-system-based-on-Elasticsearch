@@ -1,0 +1,35 @@
+<%- include('partials/header', { title: 'Kết quả tìm kiếm cho "' + query + '"' }) %>
+
+<main class="main-content">
+    <h1>Kết quả tìm kiếm cho: "<%= query %>"</h1>
+    <p class="total-results">Tìm thấy <%= total %> kết quả.</p>
+
+    <div id="searchResults" class="search-results-grid">
+        <% if (results && results.length > 0) { %>
+            <% results.forEach(product => { %>
+                <div class="product-card">
+                    <h3><%= product._source.name %></h3>
+                    <p class="product-category"><%= product._source.category %></p>
+                    <p class="product-description"><%= product._source.description ? product._source.description.substring(0, 100) + '...' : 'Không có mô tả' %></p>
+                    <p class="product-price">Giá: <%= product._source.price %></p>
+                    </div>
+            <% }) %>
+        <% } else { %>
+            <p>Không tìm thấy sản phẩm nào phù hợp với từ khóa của bạn.</p>
+        <% } %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+        <nav class="pagination">
+            <ul>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="<%= currentPage === i ? 'active' : '' %>">
+                        <a href="/search?q=<%= query %>&page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    <% } %>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,10 @@
+<%- include('partials/header', { title: 'Đã có lỗi xảy ra' }) %>
+<main class="main-content text-center">
+    <h1>Đã có lỗi xảy ra</h1>
+    <p><%= message %></p>
+    <% if (process.env.NODE_ENV === 'development' && error && error.stack) { %>
+        <pre><code><%= error.stack %></code></pre>
+    <% } %>
+    <a href="/">Quay về Trang chủ</a>
+</main>
+<%- include('partials/footer') %>

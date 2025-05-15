@@ -1,0 +1,31 @@
+<%- include('../partials/header', { title: 'Admin Dashboard', isAdminPage: true }) %>
+
+<div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+    <main class="admin-main-content">
+        <h1>Chào mừng <%= currentUser.username %> đến Trang Quản trị!</h1>
+        <p>Đây là nơi bạn có thể quản lý hệ thống tìm kiếm.</p>
+
+        <section id="admin-overview">
+            <h2>Tổng quan nhanh</h2>
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h3>Nodes Hoạt Động</h3>
+                    <p id="activeNodesCount">Đang tải...</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Tổng số User</h3>
+                    <p id="totalUsersCount">Đang tải...</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Cluster Status</h3>
+                    <p id="clusterStatus">Đang tải...</p>
+                </div>
+            </div>
+        </section>
+         <p><a href="/admin/nodes">Xem chi tiết trạng thái Node</a></p>
+         <p><a href="/admin/users">Quản lý người dùng</a></p>
+    </main>
+</div>
+
+<%- include('../partials/footer', { isAdminPage: true }) %>

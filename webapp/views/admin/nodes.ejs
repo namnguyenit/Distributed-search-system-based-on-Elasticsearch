@@ -1,0 +1,13 @@
+<%- include('../partials/header', { title: 'Trạng thái Node Elasticsearch', isAdminPage: true }) %>
+
+<div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+    <main class="admin-main-content">
+        <h1>Trạng thái Node Elasticsearch</h1>
+        <div id="nodeStatusContainer">
+            <p>Đang tải thông tin node...</p>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer', { isAdminPage: true }) %>

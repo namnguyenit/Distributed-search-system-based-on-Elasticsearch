@@ -1,0 +1,13 @@
+<%- include('../partials/header', { title: 'Quản lý Người dùng', isAdminPage: true }) %>
+
+<div class="admin-layout">
+    <%- include('../partials/admin-sidebar') %>
+    <main class="admin-main-content">
+        <h1>Quản lý Người dùng</h1>
+        <div id="userListContainer">
+            <p>Đang tải danh sách người dùng...</p>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer', { isAdminPage: true }) %>

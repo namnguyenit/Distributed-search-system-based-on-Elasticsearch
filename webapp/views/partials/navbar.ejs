@@ -1,0 +1,18 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-brand">Tìm Kiếm Nhanh</a>
+        <ul class="nav-links">
+            <li><a href="/">Trang chủ</a></li>
+            <% if (isAuthenticated) { %>
+                <li><a href="/history">Lịch sử</a></li>
+                <% if (isAdmin) { %>
+                    <li><a href="/admin/dashboard">Admin</a></li>
+                <% } %>
+                <li><a href="/auth/logout">Đăng xuất (<%= currentUser.username %>)</a></li>
+            <% } else { %>
+                <li><a href="/auth/login">Đăng nhập</a></li>
+                <li><a href="/auth/register">Đăng ký</a></li>
+            <% } %>
+        </ul>
+    </div>
+</nav>

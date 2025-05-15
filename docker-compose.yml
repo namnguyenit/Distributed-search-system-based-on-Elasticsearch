@@ -12,6 +12,8 @@ services:
       - cluster.initial_master_nodes=es-node01,es-node02,es-node03
       - bootstrap.memory_lock=true # Quan trọng cho performance, cần cấu hình ulimits trên host
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Điều chỉnh RAM cho ES, tùy theo tài nguyên máy
+      - gateway.recover_after_data_nodes=3
+      - xpack.security.enabled=false
     ulimits: # Yêu cầu cho bootstrap.memory_lock=true
       memlock:
         soft: -1
@@ -38,6 +40,8 @@ services:
       - cluster.initial_master_nodes=es-node01,es-node02,es-node03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - gateway.recover_after_data_nodes=3
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -68,6 +72,8 @@ services:
       - cluster.initial_master_nodes=es-node01,es-node02,es-node03
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - gateway.recover_after_data_nodes=3
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -97,6 +103,8 @@ services:
       # cluster.initial_master_nodes không cần cho node này nếu nó không phải là master-eligible ban đầu
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - gateway.recover_after_data_nodes=3
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -126,6 +134,8 @@ services:
       - discovery.seed_hosts=es-node01,es-node02,es-node03,es-node04,es-node05
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - gateway.recover_after_data_nodes=3
+      - xpack.security.enabled=false
     ulimits:
       memlock:
         soft: -1
@@ -172,10 +182,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongodata:/data/db # Volume để lưu trữ dữ liệu MongoDB
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=trungcao # Thay bằng user của bạn
-      - MONGO_INITDB_ROOT_PASSWORD=admin # Thay bằng password của bạn
+      - mongodata:/data/db 
     networks:
       - searchnet
 
@@ -186,7 +193,7 @@ services:
     ports:
       - "3000:3000" # Ánh xạ cổng 3000 của host tới cổng 3000 của webapp
     environment:
-      - MONGODB_URI=mongodb://trungcao:admin@mongo:27017/my_search_db?authSource=admin
+      - MONGODB_URI=mongodb://mongo:27017/my_search_db # Kết nối tới MongoDB
       - ELASTICSEARCH_HOST=http://loadbalancer 
       - JWT_SECRET=Op9g4ZK6k5NLZxGrNRGzR4sU1cLh5uU8yo2Nmso1vhcsHwhlJX8fBzK2UnzOZ5zj # Cực kỳ quan trọng, phải nhớ trung ơi
       - NODE_ENV=development

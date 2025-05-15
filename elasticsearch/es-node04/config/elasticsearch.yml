@@ -12,7 +12,7 @@ discovery.seed_hosts: ["es-node01:9300", "es-node02:9300", "es-node03:9300", "es
 # Nó sẽ bỏ qua thiết lập này nếu cụm đã được hình thành.
 cluster.initial_master_nodes: ["es-node01", "es-node02", "es-node03"]
 
-gateway.recover_after_nodes: 3
+gateway.recover_after_data_nodes: 3
 # gateway.recover_after_master_nodes: 2
-
+xpack.security.enabled: false
 # bootstrap.memory_lock: true

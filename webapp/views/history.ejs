@@ -1,0 +1,24 @@
+<%- include('partials/header', { title: 'Lịch sử tìm kiếm' }) %>
+
+<main class="main-content">
+    <h1>Lịch sử tìm kiếm của bạn</h1>
+    <div id="searchHistoryList">
+        <% if (history && history.length > 0) { %>
+            <ul>
+                <% history.forEach(item => { %>
+                    <li>
+                        <a href="/search?q=<%= encodeURIComponent(item.query) %>"><%= item.query %></a>
+                        <span> - <%= new Date(item.timestamp).toLocaleString('vi-VN') %></span>
+                        <% if (typeof item.resultsCount !== 'undefined') { %>
+                            <span> (<%= item.resultsCount %> kết quả)</span>
+                        <% } %>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p>Bạn chưa có lịch sử tìm kiếm nào.</p>
+        <% } %>
+    </div>
+</main>
+
+<%- include('partials/footer') %>
