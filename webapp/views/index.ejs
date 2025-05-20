@@ -1,20 +1,14 @@
-<%- include('partials/header', { title: 'Tìm kiếm Sản phẩm' }) %>
-
-<main class="main-content">
+<%- include('partials/header') %> <div class="container">
     <section class="search-section">
-        <h1>Tìm kiếm sản phẩm bạn mong muốn</h1>
+        <h1>Tìm kiếm sản phẩm</h1>
         <form id="searchForm">
-            <input type="text" id="searchInput" name="q" placeholder="Nhập tên sản phẩm, mô tả..." autocomplete="off">
-            <button type="submit">Tìm kiếm</button>
+            <input type="text" id="searchInput" placeholder="Nhập tên sản phẩm..." autocomplete="off">
+            <button type="submit">Tìm</button>
         </form>
-        <div id="suggestionsContainer">
+        <div id="suggestionsContainer" class="suggestions-container" style="display:none;">
             </div>
     </section>
 
-    <section class="featured-products">
-        <h2>Sản phẩm nổi bật</h2>
-        <p>Nội dung sản phẩm nổi bật...</p>
-    </section>
-</main>
+    </div>
 
-<%- include('partials/footer') %>
+<%- include('partials/product-popup') %> <%- include('partials/footer') %> <script src="/js/main.js"></script>

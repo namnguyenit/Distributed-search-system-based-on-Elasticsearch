@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # --- Elasticsearch Nodes ---
   es-node01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4 # Chọn phiên bản ES bạn muốn
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1 
     container_name: es-node01
     environment:
       - node.name=es-node01
@@ -31,7 +31,7 @@ services:
       - searchnet
 
   es-node02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1
     container_name: es-node02
     environment:
       - node.name=es-node02
@@ -63,8 +63,7 @@ services:
   # --- Định nghĩa tương tự cho es-node03, es-node04, es-node05 ---
   # Đảm bảo thay đổi container_name, node.name, volumes (esdata0X), và ports (920X, 930X)
   es-node03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
-    container_name: es-node03
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1
     environment:
       - node.name=es-node03
       - cluster.name=my-search-cluster
@@ -94,7 +93,7 @@ services:
       - es-node02
 
   es-node04:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1
     container_name: es-node04
     environment:
       - node.name=es-node04
@@ -126,7 +125,7 @@ services:
       - es-node03
 
   es-node05:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.1
     container_name: es-node05
     environment:
       - node.name=es-node05
@@ -180,7 +179,7 @@ services:
     image: mongo:latest
     container_name: mongodb
     ports:
-      - "27017:27017"
+      - "27019:27017"
     volumes:
       - mongodata:/data/db 
     networks:

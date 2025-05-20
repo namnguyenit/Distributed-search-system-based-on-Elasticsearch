@@ -299,3 +299,90 @@ footer {
     color: white;
     border-color: #337ab7;
 }
+
+.suggestions-container {
+    position: relative; /* Hoặc absolute, tùy thuộc vào layout của bạn */
+    max-width: 500px; /* Khớp với chiều rộng của input tìm kiếm */
+    margin: 0 auto;   /* Căn giữa nếu nó là một block */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    z-index: 1000; /* Đảm bảo nó ở trên các nội dung khác */
+    max-height: 250px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.suggestion-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Product Popup Modal */
+.modal {
+    display: none; /* Ẩn theo mặc định */
+    position: fixed; /* Giữ nguyên vị trí */
+    z-index: 1001; /* Nằm trên cùng */
+    left: 0;
+    top: 0;
+    width: 100%; /* Chiều rộng đầy đủ */
+    height: 100%; /* Chiều cao đầy đủ */
+    overflow: auto; /* Cho phép cuộn nếu cần */
+    background-color: rgba(0,0,0,0.6); /* Màu đen với độ mờ */
+    padding-top: 60px; /* Vị trí của box */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* Cách top 5% và căn giữa */
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%; /* Có thể nhiều hơn hoặc ít hơn, tùy thuộc vào kích thước màn hình */
+    max-width: 600px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+/* Thêm Animation */
+@keyframes animatetop {
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#productPopupDetails img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px;
+    max-height: 300px;
+    border-radius: 4px;
+}

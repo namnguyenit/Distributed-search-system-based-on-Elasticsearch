@@ -27,17 +27,16 @@ router.get('/search', async (req, res, next) => {
     const from = (page - 1) * limit;
 
     if (!query) {
-        // Có thể redirect về trang chủ hoặc hiển thị thông báo
         return res.redirect('/');
     }
 
     try {
-        const esResults = await esService.searchProducts('products', query, from, limit);
+        // FIX: Gọi searchProducts một cách chính xác với chuỗi truy vấn
+        const esResults = await esService.searchProducts(query, from, limit);
 
-        // Lưu lịch sử tìm kiếm nếu người dùng đã đăng nhập
         if (req.session.user) {
             const history = new SearchHistory({
-                userId: req.session.user._id, // Hoặc req.user.id tùy cách bạn lưu
+                userId: req.session.user._id,
                 query: query,
                 resultsCount: esResults.total.value,
             });
@@ -51,7 +50,7 @@ router.get('/search', async (req, res, next) => {
             total: esResults.total.value,
             currentPage: page,
             totalPages: Math.ceil(esResults.total.value / limit)
-        });
+        }); 
     } catch (error) {
         console.error('Lỗi khi thực hiện tìm kiếm từ server-side:', error);
         next(error); // Chuyển lỗi cho global error handler

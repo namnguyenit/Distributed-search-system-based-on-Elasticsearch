@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const config = require('./config'); 
+const Product = require('./models/productModel');
+const { indexProduct, createProductIndex, bulkIndexProducts  } = require('./services/elasticsearchService');
+
 
 // đẩy các route vào
 const mainRoutes = require('./routes/index');
@@ -16,7 +19,10 @@ const app = express();
 
 // --- Kết nối MongoDB ---
 mongoose.connect(config.mongoURI)
-    .then(() => console.log('MongoDB Connected Successfully!'))
+    .then(() => {
+        console.log('MongoDB Connected Successfully!')
+        initialSyncMongoToES();
+    })
     .catch(err => console.error('MongoDB Connection Error:', err));
 
 // --- Middleware ---
@@ -79,3 +85,23 @@ app.listen(config.port, () => {
     console.log(`Connecting to Elasticsearch via: ${config.elasticsearchHost}`);
     console.log(`Connecting to MongoDB via: ${config.mongoURI}`);
 });
+
+// --- Hàm đồng bộ hóa ban đầu dữ liệu từ MongoDB sang Elasticsearch ---
+async function initialSyncMongoToES() {
+    console.log('Starting initial sync from MongoDB to Elasticsearch...');
+    try {
+        // Đảm bảo index tồn tại và có mapping chính xác
+        await createProductIndex(); // Hàm này cũng sẽ log nếu index đã tồn tại
+
+        const products = await Product.find({});
+        if (products.length === 0) {
+            console.log('No products found in MongoDB to sync.');
+            return;
+        }
+        console.log(`Found ${products.length} products in MongoDB. Starting bulk indexing...`);
+        await bulkIndexProducts(products); // Sử dụng bulk thay vì for...await
+        console.log('Initial sync completed successfully.');
+    } catch (error) {
+        console.error('Error during initial sync:', error);
+    }
+}
