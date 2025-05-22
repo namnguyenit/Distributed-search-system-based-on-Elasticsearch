@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchData(url) {
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, { credentials: 'same-origin' });
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: response.statusText }));
                 throw new Error(`API Error: ${response.status} - ${errorData.message || 'Unknown error'}`);
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const clusterStatusEl = document.getElementById('clusterStatus');
 
         if(activeNodesCountEl) {
-            const nodeData = await fetchData('/api/admin/nodes-status');
+            const nodeData = await fetchData('/admin/api/nodes-status');
             if (nodeData) {
                 activeNodesCountEl.textContent = nodeData.number_of_nodes || 'Lỗi';
                 clusterStatusEl.textContent = nodeData.status ? nodeData.status.toUpperCase() : 'Lỗi';
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if(totalUsersCountEl) {
-            const userData = await fetchData('/api/admin/users');
+            const userData = await fetchData('/admin/api/users');
             if(userData) {
                 totalUsersCountEl.textContent = userData.length || '0';
             } else {
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('nodeStatusContainer');
         if (!container) return;
 
-        const data = await fetchData('/api/admin/nodes-status');
+        const data = await fetchData('/admin/api/nodes-status');
         if (data) {
             let html = `
                 <h2>Thông tin Cluster</h2>
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('userListContainer');
         if (!container) return;
 
-        const users = await fetchData('/api/admin/users');
+        const users = await fetchData('/admin/api/users');
         if (users) {
             let html = `
                 <table>
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const loadingMessage = container.querySelector('p:not(.warning)');
 
 
-        const data = await fetchData('/api/admin/request-stats');
+        const data = await fetchData('/admin/api/request-stats');
         if(loadingMessage) loadingMessage.remove(); // Xóa thông báo "Đang tải..."
 
         if (data) {

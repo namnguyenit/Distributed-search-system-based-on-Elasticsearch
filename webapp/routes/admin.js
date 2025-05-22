@@ -69,10 +69,10 @@ router.get('/request-stats', (req, res) => {
 // Các route này sẽ được truy cập qua /api/admin/nodes-status, /api/admin/users, ...
 // do được mount kép trong app.js với prefix /api
 
-router.get('/nodes-status', adminController.getNodesStatus);
-router.get('/request-stats', adminController.getRequestStats);
-router.get('/users', adminController.getUsers);
-router.put('/users/:userId/role', adminController.updateUserRole);
-router.delete('/users/:userId', adminController.deleteUser);
+router.get('/api/nodes-status', adminController.getNodesStatus);
+router.get('/api/request-stats', adminController.getRequestStats);
+router.get('/api/users', adminController.getUsers);
+router.put('/api/users/:userId/role', adminController.updateUserRole);
+router.delete('/api/users/:userId', adminController.deleteUser);
 
 module.exports = router;
