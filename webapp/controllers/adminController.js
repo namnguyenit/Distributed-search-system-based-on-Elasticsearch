@@ -21,8 +21,8 @@ exports.getNodesStatus = async (req, res) => {
                     is_master: health.master_node === nodeId, // Kiểm tra node hiện tại có phải master không
                     http_address: node.http ? node.http.publish_address : 'N/A',
                     // Lấy một vài stats cơ bản
-                    jvm_heap_used_percent: node.jvm ? node.jvm.mem.heap_used_percent : 'N/A',
-                    os_cpu_percent: node.os && node.os.cpu ? node.os.cpu.percent : 'N/A',
+                    jvm_heap_used_percent: nodeStat && nodeStat.jvm && nodeStat.jvm.mem ? nodeStat.jvm.mem.heap_used_percent : (node.jvm && node.jvm.mem ? node.jvm.mem.heap_used_percent : 'N/A'),
+                    os_cpu_percent: nodeStat && nodeStat.os && nodeStat.os.cpu ? nodeStat.os.cpu.percent : (node.os && node.os.cpu ? node.os.cpu.percent : 'N/A'),
                     // total_http_opened: nodeStat && nodeStat.http ? nodeStat.http.total_opened : 'N/A'
                 });
             }

@@ -278,7 +278,7 @@ async function getNodesInfo() {
 
 async function getNodesStats() {
     try {
-        return await esClient.nodes.stats({ metric: ['indices', 'http'] });
+        return await esClient.nodes.stats({ metric: ['jvm', 'os', 'http', 'indices', 'process', 'thread_pool', 'fs', 'transport'] });
     } catch (error) {
         console.error('Lỗi lấy thống kê node:', error.meta ? error.meta.body : error);
         throw error;

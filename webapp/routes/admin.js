@@ -3,31 +3,76 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 
-// Tất cả các route trong file này đều yêu cầu đăng nhập và là admin
+// Middleware chung cho tất cả các route trong file này
 router.use(isAuthenticated, isAdmin);
 
+// ==== Page Rendering Routes ====
+// Các route này sẽ được truy cập qua /admin/dashboard, /admin/node-status, ...
+
 router.get('/dashboard', (req, res) => {
-    console.log('Current session user:', req.session.user);
     res.render('admin/dashboard', {
         title: 'Admin Dashboard',
-        currentUser: req.session.user
+        currentUser: req.session.user,
+        currentPath: '/admin/dashboard'
     });
 });
 
-// GET /api/admin/dashboard-stats (Tổng quan)
-// router.get('/dashboard-stats', adminController.getDashboardStats);
+router.get('/node-status', (req, res) => {
+    res.render('admin/node-status', {
+        title: 'Trạng thái Node',
+        currentUser: req.session.user,
+        currentPath: '/admin/node-status'
+    });
+});
 
-// GET /api/admin/nodes-status (Kiểm tra node search nào còn sống)
+router.get('/user-management', (req, res) => {
+    res.render('admin/user-management', {
+        title: 'Quản lý User',
+        currentUser: req.session.user,
+        currentPath: '/admin/user-management'
+    });
+});
+
+router.get('/request-statistics', (req, res) => {
+    res.render('admin/request-statistics', {
+        title: 'Thống kê Request',
+        currentUser: req.session.user,
+        currentPath: '/admin/request-statistics'
+    });
+});
+
+router.get('/nodes', (req, res) => {
+    res.render('admin/node-status', {
+        title: 'Trạng thái Node',
+        currentUser: req.session.user,
+        currentPath: '/admin/nodes'
+    });
+});
+
+router.get('/users', (req, res) => {
+    res.render('admin/user-management', {
+        title: 'Quản lý User',
+        currentUser: req.session.user,
+        currentPath: '/admin/users'
+    });
+});
+
+router.get('/request-stats', (req, res) => {
+    res.render('admin/request-statistics', {
+        title: 'Thống kê Request',
+        currentUser: req.session.user,
+        currentPath: '/admin/request-stats'
+    });
+});
+
+// ==== API Endpoints ====
+// Các route này sẽ được truy cập qua /api/admin/nodes-status, /api/admin/users, ...
+// do được mount kép trong app.js với prefix /api
+
 router.get('/nodes-status', adminController.getNodesStatus);
-
-// GET /api/admin/request-stats (Đếm tổng lượng request và request từng node - phần này phức tạp)
 router.get('/request-stats', adminController.getRequestStats);
-
-// GET /api/admin/users (Danh sách user)
 router.get('/users', adminController.getUsers);
-// PUT /api/admin/users/:userId/role (Thay đổi role user)
 router.put('/users/:userId/role', adminController.updateUserRole);
-// DELETE /api/admin/users/:userId (Xóa user)
 router.delete('/users/:userId', adminController.deleteUser);
 
 module.exports = router;

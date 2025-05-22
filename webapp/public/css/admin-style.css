@@ -1,13 +1,15 @@
 .admin-layout {
     display: flex;
+    gap: 24px;
 }
 
 .admin-sidebar {
-    width: 250px;
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-right: 1px solid #dee2e6;
-    min-height: calc(100vh - 60px - 2rem - 40px); /* viewport height - navbar - footer - container padding */
+    min-width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 20px 0 20px 20px;
+    height: fit-content;
 }
 
 .admin-sidebar h4 {
@@ -24,7 +26,7 @@
     display: block;
     padding: 10px 15px;
     text-decoration: none;
-    color: #337ab7;
+    color: #1976d2;
     border-radius: 4px;
     margin-bottom: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -36,12 +38,16 @@
 }
 
 .admin-main-content {
-    flex-grow: 1;
-    padding: 20px;
+    padding: 24px 32px;
+    background: #f4f6fa;
+    min-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
-.admin-main-content h1 {
-    margin-bottom: 20px;
+.admin-main-content h1, .admin-main-content h2, .admin-main-content h3, .admin-main-content h4 {
+    margin-top: 0;
+    color: #2d3a4b;
 }
 
 /* Admin Dashboard Quick Stats */
@@ -87,9 +93,9 @@
 #nodeStatusContainer th, #userListContainer th, #requestStatsContainer th {
     background-color: #f2f2f2;
 }
-.status-green { color: green; font-weight: bold; }
-.status-yellow { color: orange; font-weight: bold; }
-.status-red { color: red; font-weight: bold; }
+.status-green { color: #388e3c; font-weight: bold; }
+.status-yellow { color: #fbc02d; font-weight: bold; }
+.status-red { color: #e53935; font-weight: bold; }
 
 /* User Management Actions */
 .user-actions button, .user-actions select {
@@ -98,10 +104,57 @@
     font-size: 0.9em;
 }
 .warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-    padding: 10px;
+    color: #e53935;
+    font-weight: 500;
+    margin: 10px 0;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+table th, table td {
+    border: 1px solid #e0e0e0;
+    padding: 10px 12px;
+    text-align: left;
+}
+table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+table tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.btn-update-role, .btn-delete-user {
+    padding: 5px 12px;
+    border: none;
     border-radius: 4px;
-    margin-top: 15px;
+    margin-right: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.btn-update-role {
+    background: #1976d2;
+    color: #fff;
+}
+.btn-update-role:disabled {
+    background: #b0bec5;
+    color: #fff;
+    cursor: not-allowed;
+}
+.btn-delete-user {
+    background: #e53935;
+    color: #fff;
+}
+
+select.user-role-select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #b0bec5;
+    background: #fff;
 }
