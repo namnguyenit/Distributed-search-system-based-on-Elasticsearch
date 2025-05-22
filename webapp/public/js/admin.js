@@ -178,10 +178,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newRole = row.querySelector('.user-role-select').value;
                 if (confirm(`Bạn có chắc muốn thay đổi vai trò của người dùng này thành "${newRole}" không?`)) {
                     try {
-                        const response = await fetch(`/api/admin/users/${userId}/role`, {
+                        const response = await fetch(`/admin/api/users/${userId}/role`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ role: newRole })
+                            body: JSON.stringify({ role: newRole }),
+                            credentials: 'same-origin'
                         });
                         const result = await response.json();
                         if (!response.ok) throw new Error(result.message || 'Lỗi cập nhật');
@@ -202,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const username = row.cells[1].textContent; // Lấy username để hiển thị trong confirm
                 if (confirm(`Bạn có chắc muốn xóa người dùng "${username}" (ID: ${userId}) không? Hành động này không thể hoàn tác.`)) {
                      try {
-                        const response = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+                        const response = await fetch(`/admin/api/users/${userId}`, { method: 'DELETE', credentials: 'same-origin' });
                         const result = await response.json();
                         if (!response.ok) throw new Error(result.message || 'Lỗi xóa người dùng');
                         alert('Xóa người dùng thành công!');
