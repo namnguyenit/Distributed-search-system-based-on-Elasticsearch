@@ -6,6 +6,14 @@ const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
 // Tất cả các route trong file này đều yêu cầu đăng nhập và là admin
 router.use(isAuthenticated, isAdmin);
 
+router.get('/dashboard', (req, res) => {
+    console.log('Current session user:', req.session.user);
+    res.render('admin/dashboard', {
+        title: 'Admin Dashboard',
+        currentUser: req.session.user
+    });
+});
+
 // GET /api/admin/dashboard-stats (Tổng quan)
 // router.get('/dashboard-stats', adminController.getDashboardStats);
 

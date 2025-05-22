@@ -295,7 +295,7 @@ async function bulkIndexProducts(products) {
         }
     ]);
     try {
-        const { body: bulkResponse } = await esClient.bulk({ refresh: true, body });
+        const bulkResponse = await esClient.bulk({ refresh: true, body });
         if (bulkResponse.errors) {
             console.error('Bulk indexing had errors:', bulkResponse.errors);
         }

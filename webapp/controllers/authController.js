@@ -50,6 +50,8 @@ exports.postLogin = async (req, res) => {
             role: user.role
         };
 
+        console.log('Session user after login:', req.session.user);
+
         // Chuyển hướng đến trang dashboard nếu là admin, ngược lại về trang chủ
         if (user.role === 'admin') {
             res.redirect('/admin/dashboard');
@@ -124,12 +126,12 @@ exports.postRegister = async (req, res) => {
             _id: newUser._id,
             username: newUser.username,
             email: newUser.email,
-            role: newUser.role
+            role: newUser.role // PHẢI là 'admin' nếu là admin
         };
         // Hoặc yêu cầu người dùng đăng nhập lại
         // req.flash('success_msg', 'Bạn đã đăng ký thành công! Vui lòng đăng nhập.'); // Nếu dùng connect-flash
 
-        res.redirect('/'); // Chuyển về trang chủ hoặc trang đăng nhập
+        res.redirect('/');
 
     } catch (error) {
         console.error("Lỗi đăng ký:", error);
@@ -166,3 +168,4 @@ exports.logout = (req, res) => {
         res.redirect('/auth/login');
     });
 };
+

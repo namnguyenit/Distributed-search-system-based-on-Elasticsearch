@@ -8,7 +8,6 @@ const config = require('./config');
 const Product = require('./models/productModel');
 const { indexProduct, createProductIndex, bulkIndexProducts  } = require('./services/elasticsearchService');
 
-
 // đẩy các route vào
 const mainRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
@@ -30,14 +29,6 @@ app.use(morgan('dev')); // Logging HTTP requests trong console
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
-// Thiết lập EJS làm view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-
 app.use(session({
     secret: config.sessionSecret,
     resave: false,
@@ -51,7 +42,7 @@ app.use(session({
     }
 }));
 
-
+// Đặt middleware này NGAY SAU session
 app.use((req, res, next) => {
     res.locals.currentUser = req.session.user; 
     res.locals.isAuthenticated = !!req.session.user;
@@ -59,8 +50,16 @@ app.use((req, res, next) => {
     next();
 });
 
+// Thiết lập EJS làm view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 // --- Routes ---
+app.use('/admin', adminApiRoutes);
 app.use('/', mainRoutes); // Routes cho các trang chính (trang chủ, giới thiệu,...)
 app.use('/auth', authRoutes); // Routes cho đăng nhập, đăng ký
 app.use('/api/search', searchApiRoutes); // API Routes cho chức năng tìm kiếm

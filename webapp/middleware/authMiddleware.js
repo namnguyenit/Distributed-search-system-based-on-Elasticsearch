@@ -1,55 +1,50 @@
 const jwt = require('jsonwebtoken');
-    const config = require('../config');
-    const User = require('../models/userModel');
-    const SearchHistory = require('../models/searchHistoryModel');
-    exports.isAuthenticated = (req, res, next) => {
-        if (req.session && req.session.user) {
-            return next();
+const config = require('../config');
+const User = require('../models/userModel');
+const SearchHistory = require('../models/searchHistoryModel');
+exports.isAuthenticated = (req, res, next) => {
+    console.log('isAuthenticated session:', req.session.user);
+    if (req.session && req.session.user) {
+        return next();
+    }
+    // Nếu không có session, kiểm tra JWT token (nếu bạn dùng API token-based)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'Không thể xác minh. Không tìm thấy token được cung cấp' });
         }
-        // Nếu không có session, kiểm tra JWT token (nếu bạn dùng API token-based)
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            const token = authHeader.split(' ')[1];
-            if (!token) {
-                return res.status(401).json({ message: 'Không thể xác minh. Không tìm thấy token được cung cấp' });
-            }
-            try {
-                const decoded = jwt.verify(token, config.jwtSecret);
-                // Gắn thông tin user vào request để các controller sau có thể sử dụng
-                // Bạn có thể muốn tìm user trong DB ở đây để đảm bảo user còn tồn tại và thông tin là mới nhất
-                User.findById(decoded.id).select('-password').then(user => {
-                    if (!user) {
-                        return res.status(401).json({ message: 'Không tìm thấy người dùng' });
-                    }
-                    req.user = user; // Gắn object user đầy đủ
-                    return next();
-                }).catch(err => {
-                    console.error("Lỗi khi tìm kiếm người dùng bằng token ID:", err);
-                    return res.status(500).json({ message: "Error verifying authentication." });
-                });
-            } catch (err) {
-                console.error("Lỗi xác thực JWT", err.message);
-                return res.status(401).json({ message: 'Chưa xác thực. Token không hợp lệ' });
-            }
-        } else {
-            // Đối với web app dùng EJS, thường sẽ redirect về trang login
-            res.redirect('/auth/login');
-            // Đối với API, trả về lỗi JSON
-            return res.status(401).json({ message: 'Chưa xác thực. Hãy đăng nhập' });
+        try {
+            const decoded = jwt.verify(token, config.jwtSecret);
+            User.findById(decoded.id).select('-password').then(user => {
+                if (!user) {
+                    return res.status(401).json({ message: 'Không tìm thấy người dùng' });
+                }
+                req.user = user;
+                return next();
+            }).catch(err => {
+                console.error("Lỗi khi tìm kiếm người dùng bằng token ID:", err);
+                return res.status(500).json({ message: "Error verifying authentication." });
+            });
+        } catch (err) {
+            console.error("Lỗi xác thực JWT", err.message);
+            return res.status(401).json({ message: 'Chưa xác thực. Token không hợp lệ' });
         }
-    };
+    } else {
+        // Nếu là API (fetch, XHR, hoặc Accept: application/json) thì trả về JSON, còn lại thì redirect
+        if (req.xhr || req.headers.accept?.includes('application/json')) {
+            return res.status(401).json({ message: 'Chưa xác thực.' });
+        }
+        return res.redirect('/auth/login');
+    }
+};
 
-    // Middleware kiểm tra xem người dùng có phải là admin không
-    exports.isAdmin = (req, res, next) => {
-        // Phải gọi isAuthenticated trước middleware này
-        const userForCheck = req.user || (req.session && req.session.user);
-
-        if (userForCheck && userForCheck.role === 'admin') {
-            return next();
-        }
-        // Đối với web app dùng EJS
-        req.flash('error_msg', 'You are not authorized to view this resource.');
-        return res.redirect('/');
-        // Đối với API
-        return res.status(403).json({ message: 'Forbidden. Admin access required.' });
-    };
+// Middleware kiểm tra xem người dùng có phải là admin không
+exports.isAdmin = (req, res, next) => {
+    const userForCheck = req.user || (req.session && req.session.user);
+    console.log('isAdmin check:', userForCheck);
+    if (userForCheck && userForCheck.role === 'admin') {
+        return next();
+    }
+    return res.redirect('/');
+};
