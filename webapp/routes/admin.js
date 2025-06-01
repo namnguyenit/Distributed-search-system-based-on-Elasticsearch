@@ -75,4 +75,7 @@ router.get('/api/users', adminController.getUsers);
 router.put('/api/users/:userId/role', adminController.updateUserRole);
 router.delete('/api/users/:userId', adminController.deleteUser);
 
+// Basic Stress Test endpoint
+router.post('/stress-test', adminController.basicStressTest);
+
 module.exports = router;

@@ -108,3 +108,57 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Failed to delete user.', error: error.message });
     }
 };
+
+// Basic stress test: gửi nhiều request tìm kiếm song song
+// Sử dụng batch/pool để giới hạn số lượng request đồng thời khi stress test
+exports.basicStressTest = async (req, res) => {
+    const { numClients, numRequests } = req.body;
+    const clients = parseInt(numClients) || 1;
+    const requestsPerClient = parseInt(numRequests) || 1;
+    const totalRequests = clients * requestsPerClient;
+    const searchBody = {
+        index: 'products',
+        body: { query: { match_all: {} } }
+    };
+    let successCount = 0;
+    let failCount = 0;
+    const startTime = Date.now();
+    const concurrency = 100; // Số lượng request đồng thời tối đa
+    let running = 0;
+    let finished = 0;
+    let next = 0;
+    function runOne() {
+        running++;
+        return esService.esClient.search(searchBody)
+            .then(() => { successCount++; })
+            .catch(() => { failCount++; })
+            .finally(() => {
+                running--;
+                finished++;
+                if (next < totalRequests) {
+                    runOne();
+                    next++;
+                }
+            });
+    }
+    // Khởi tạo batch đầu tiên
+    const starters = [];
+    for (let i = 0; i < Math.min(concurrency, totalRequests); i++) {
+        starters.push(runOne());
+        next++;
+    }
+    // Đợi cho đến khi tất cả hoàn thành
+    while (finished < totalRequests) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise(r => setTimeout(r, 20));
+    }
+    const totalTime = Date.now() - startTime;
+    res.json({
+        success: true,
+        totalRequests,
+        successCount,
+        failCount,
+        totalTime,
+        avgTime: (totalTime / totalRequests).toFixed(2)
+    });
+};

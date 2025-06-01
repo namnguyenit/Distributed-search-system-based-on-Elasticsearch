@@ -8,7 +8,48 @@
             <p>Đang tải thông tin thống kê...</p>
             <p class="warning">Lưu ý: Dữ liệu này có thể là tổng số kết nối HTTP đến các node Elasticsearch, không phản ánh chính xác số lượng request tìm kiếm cụ thể. Cần giải pháp giám sát nâng cao hơn để có số liệu chi tiết.</p>
         </div>
+        <hr>
+        <section id="stressTestSection">
+            <h2>Basic Stress Test</h2>
+            <form id="stressTestForm">
+                <label for="numClients">Số lượng khách hàng (clients):</label>
+                <input type="number" id="numClients" name="numClients" min="1" value="10" required>
+                <label for="numRequests">Số lượng yêu cầu mỗi khách hàng:</label>
+                <input type="number" id="numRequests" name="numRequests" min="1" value="10" required>
+                <button type="submit">Bắt đầu Stress Test</button>
+            </form>
+            <div id="stressTestResult" style="margin-top:20px;"></div>
+        </section>
+        <script>
+        document.getElementById('stressTestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const numClients = document.getElementById('numClients').value;
+            const numRequests = document.getElementById('numRequests').value;
+            const resultDiv = document.getElementById('stressTestResult');
+            resultDiv.innerHTML = 'Đang kiểm tra...';
+            try {
+                const res = await fetch('/admin/stress-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numClients, numRequests })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    resultDiv.innerHTML = `<b>Kết quả:</b><br>
+                        Tổng request: ${data.totalRequests}<br>
+                        Thành công: ${data.successCount}<br>
+                        Thất bại: ${data.failCount}<br>
+                        Tổng thời gian: ${data.totalTime} ms<br>
+                        Thời gian trung bình mỗi request: ${data.avgTime} ms`;
+                } else {
+                    resultDiv.innerHTML = 'Có lỗi xảy ra: ' + (data.message || 'Unknown error');
+                }
+            } catch (err) {
+                resultDiv.innerHTML = 'Lỗi kết nối hoặc server.';
+            }
+        });
+        </script>
     </main>
 </div>
 
-<%- include('../partials/footer', { isAdminPage: true }) %> 
+<%- include('../partials/footer', { isAdminPage: true }) %>

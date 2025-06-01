@@ -247,44 +247,22 @@ async function bulkIndexProducts(products) {
     }
 }
 
-module.exports = {
-    esClient,
-    checkConnection,
-    createProductIndex,
-    bulkIndexProducts
-};
-
-
+// Thêm hàm getClusterHealth cho controller sử dụng
 async function getClusterHealth() {
-    try {
-        return await esClient.cluster.health({});
-    } catch (error) {
-        console.error('Lỗi lấy trạng thái cụm Elasticsearch:', error.meta ? error.meta.body : error);
-        throw error;
-    }
+    return await esClient.cluster.health();
 }
 
+// Thêm hàm getNodesInfo cho controller sử dụng
 async function getNodesInfo() {
-    try {
-        return await esClient.nodes.info({
-            node_id: '_all',
-            metric: ['http', 'transport', 'os', 'process', 'jvm']
-        });
-    } catch (error) {
-        console.error('Lỗi lấy thông tin node:', error.meta ? error.meta.body : error);
-        throw error;
-    }
+    return await esClient.nodes.info();
 }
 
+// Thêm hàm getNodesStats cho controller sử dụng
 async function getNodesStats() {
-    try {
-        return await esClient.nodes.stats({ metric: ['jvm', 'os', 'http', 'indices', 'process', 'thread_pool', 'fs', 'transport'] });
-    } catch (error) {
-        console.error('Lỗi lấy thống kê node:', error.meta ? error.meta.body : error);
-        throw error;
-    }
+    return await esClient.nodes.stats();
 }
 
+// Export esClient để controller có thể dùng trực tiếp cho stress test
 module.exports = {
     esClient,
     checkConnection,
