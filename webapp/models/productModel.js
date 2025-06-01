@@ -22,14 +22,14 @@ const productSchema = new mongoose.Schema({
         trim: true,
         index: true
     },
-    tags: [{ // [VIETNAMESE_COMMENT: Giữ nguyên 'tags' vì đã thảo luận ở bước trước]
+    tags: [{
         type: String,
         trim: true
     }],
-    brand: { // FIX: Thêm trường brand
+    brand: {
         type: String,
         trim: true,
-        index: true // Đánh index nếu bạn thường xuyên truy vấn theo brand trong MongoDB
+        index: true
     },
     imageUrl: {
         type: String,
@@ -49,7 +49,6 @@ const productSchema = new mongoose.Schema({
     }
 });
 
-// Middleware để cập nhật trường `updatedAt` trước khi lưu
 productSchema.pre('save', function(next) {
     if (this.isModified()) {
         this.updatedAt = Date.now();

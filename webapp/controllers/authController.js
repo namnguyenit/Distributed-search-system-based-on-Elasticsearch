@@ -1,25 +1,24 @@
 // webapp/controllers/authController.js
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken'); // Nếu bạn dùng JWT cho API, nhưng ở đây đang dùng session
+// const jwt = require('jsonwebtoken'); 
 // const config = require('../config');
 
-// Hiển thị trang đăng nhập
+
 exports.getLoginPage = (req, res) => {
-    if (req.session.user) { // Nếu đã đăng nhập, chuyển hướng về trang chủ
+    if (req.session.user) {
         return res.redirect('/');
     }
     res.render('login', {
         title: 'Đăng nhập',
-        error: null // Hoặc lấy từ req.flash nếu bạn dùng connect-flash
+        error: null
     });
 };
 
-// Xử lý đăng nhập
+
 exports.postLogin = async (req, res) => {
     const { username, password } = req.body;
     try {
-        // Tìm người dùng bằng username hoặc email
         const user = await User.findOne({
             $or: [{ username: username.toLowerCase() }, { email: username.toLowerCase() }]
         });
@@ -31,8 +30,8 @@ exports.postLogin = async (req, res) => {
             });
         }
 
-        // So sánh mật khẩu
-        const isMatch = await user.comparePassword(password); // Giả sử bạn có method này trong userModel
+        
+        const isMatch = await user.comparePassword(password);
 
         if (!isMatch) {
             return res.render('login', {
@@ -41,8 +40,6 @@ exports.postLogin = async (req, res) => {
             });
         }
 
-        // Lưu thông tin người dùng vào session
-        // Chỉ lưu những thông tin cần thiết, không lưu toàn bộ object user có mật khẩu
         req.session.user = {
             _id: user._id,
             username: user.username,
@@ -50,9 +47,7 @@ exports.postLogin = async (req, res) => {
             role: user.role
         };
 
-        console.log('Session user after login:', req.session.user);
 
-        // Chuyển hướng đến trang dashboard nếu là admin, ngược lại về trang chủ
         if (user.role === 'admin') {
             res.redirect('/admin/dashboard');
         } else {
@@ -60,7 +55,7 @@ exports.postLogin = async (req, res) => {
         }
 
     } catch (error) {
-        console.error("Lỗi đăng nhập:", error);
+       
         res.render('login', {
             title: 'Đăng nhập',
             error: 'Đã có lỗi xảy ra, vui lòng thử lại.'
@@ -68,7 +63,6 @@ exports.postLogin = async (req, res) => {
     }
 };
 
-// Hiển thị trang đăng ký
 exports.getRegisterPage = (req, res) => {
     if (req.session.user) {
         return res.redirect('/');
@@ -76,11 +70,11 @@ exports.getRegisterPage = (req, res) => {
     res.render('register', {
         title: 'Đăng ký',
         error: null,
-        inputData: {} // Để giữ lại dữ liệu nhập nếu có lỗi
+        inputData: {}
     });
 };
 
-// Xử lý đăng ký
+
 exports.postRegister = async (req, res) => {
     const { username, email, password, confirmPassword } = req.body;
 
@@ -93,7 +87,7 @@ exports.postRegister = async (req, res) => {
     }
 
     try {
-        // Kiểm tra xem username hoặc email đã tồn tại chưa
+
         const existingUser = await User.findOne({
             $or: [{ username: username.toLowerCase() }, { email: email.toLowerCase() }]
         });
@@ -112,29 +106,27 @@ exports.postRegister = async (req, res) => {
             });
         }
 
-        // Tạo người dùng mới (mật khẩu sẽ được hash tự động bởi pre-save hook trong userModel)
+
         const newUser = new User({
             username: username.toLowerCase(),
             email: email.toLowerCase(),
-            password: password // Mật khẩu thô, sẽ được hash bởi model
+            password: password
         });
 
         await newUser.save();
 
-        // (Tùy chọn) Tự động đăng nhập người dùng sau khi đăng ký thành công
         req.session.user = {
             _id: newUser._id,
             username: newUser.username,
             email: newUser.email,
-            role: newUser.role // PHẢI là 'admin' nếu là admin
+            role: newUser.role 
         };
-        // Hoặc yêu cầu người dùng đăng nhập lại
-        // req.flash('success_msg', 'Bạn đã đăng ký thành công! Vui lòng đăng nhập.'); // Nếu dùng connect-flash
+
 
         res.redirect('/');
 
     } catch (error) {
-        console.error("Lỗi đăng ký:", error);
+        // console.error("Lỗi đăng ký:", error);
         // Xử lý lỗi validation từ Mongoose (nếu có)
         if (error.name === 'ValidationError') {
             let errors = {};
@@ -156,15 +148,14 @@ exports.postRegister = async (req, res) => {
     }
 };
 
-// Xử lý đăng xuất
+
 exports.logout = (req, res) => {
     req.session.destroy(err => {
         if (err) {
-            console.error("Lỗi khi đăng xuất:", err);
-            // Có thể xử lý lỗi ở đây, ví dụ render trang lỗi
-            return res.redirect('/'); // Hoặc một trang lỗi
+            // console.error("Lỗi khi đăng xuất:", err);
+            return res.redirect('/');
         }
-        res.clearCookie('connect.sid'); // Tên cookie mặc định của express-session, kiểm tra lại nếu bạn đặt tên khác
+        res.clearCookie('connect.sid'); 
         res.redirect('/auth/login');
     });
 };

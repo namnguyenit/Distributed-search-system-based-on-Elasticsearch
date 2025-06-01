@@ -3,12 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
     const suggestionsContainer = document.getElementById('suggestionsContainer');
-    const productPopupModal = document.getElementById('productPopupModal'); // Lấy phần tử popup
+    const productPopupModal = document.getElementById('productPopupModal');
 
-    // --- Các hàm cho Product Popup ---
     function displayProductPopup(product) {
         if (!product || !productPopupModal) return;
-
         document.getElementById('popupProductName').textContent = product.name || 'N/A';
         const productImage = document.getElementById('popupProductImage');
         if (product.imageUrl) {
@@ -21,27 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('popupProductPrice').textContent = product.price !== undefined ? product.price.toFixed(2) : 'N/A';
         document.getElementById('popupProductStock').textContent = product.stock !== undefined ? product.stock : 'N/A';
         document.getElementById('popupProductDescription').textContent = product.description || '';
-
         productPopupModal.style.display = 'block';
     }
 
-    // Làm cho closeProductPopup có thể truy cập toàn cục hoặc gắn event listener cụ thể
     window.closeProductPopup = function() {
         if (productPopupModal) {
             productPopupModal.style.display = 'none';
         }
     }
 
-    // Đóng popup nếu người dùng nhấp ra ngoài nội dung modal
     window.addEventListener('click', (event) => {
         if (event.target === productPopupModal) {
             closeProductPopup();
         }
     });
-    // --- Kết thúc các hàm cho Product Popup ---
 
-
-    // Xử lý tìm kiếm
     if (searchForm) {
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -52,19 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Xử lý gợi ý tìm kiếm
     if (searchInput && suggestionsContainer) {
         let suggestionTimeout;
         searchInput.addEventListener('input', () => {
             clearTimeout(suggestionTimeout);
             const prefix = searchInput.value.trim();
-
-            if (prefix.length < 2) { // Chỉ tìm gợi ý khi có ít nhất 2 ký tự
+            if (prefix.length < 2) {
                 suggestionsContainer.innerHTML = '';
                 suggestionsContainer.style.display = 'none';
                 return;
             }
-
             suggestionTimeout = setTimeout(async () => {
                 try {
                     // API endpoint cho gợi ý

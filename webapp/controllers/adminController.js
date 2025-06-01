@@ -1,12 +1,11 @@
 const esService = require('../services/elasticsearchService');
 const User = require('../models/userModel');
-// Cần thêm logic để phân tích log Nginx hoặc dùng Prometheus/Grafana cho request-stats chính xác
 
 exports.getNodesStatus = async (req, res) => {
     try {
         const health = await esService.getClusterHealth();
-        const nodesInfo = await esService.getNodesInfo(); // Lấy thông tin chi tiết hơn
-        const nodesStats = await esService.getNodesStats(); // Lấy stats
+        const nodesInfo = await esService.getNodesInfo();
+        const nodesStats = await esService.getNodesStats();
 
         let liveNodes = [];
         if (nodesInfo && nodesInfo.nodes) {
@@ -16,21 +15,19 @@ exports.getNodesStatus = async (req, res) => {
                 liveNodes.push({
                     id: nodeId,
                     name: node.name,
-                    ip: node.ip, // Hoặc node.http.publish_address
+                    ip: node.ip,
                     roles: node.roles,
-                    is_master: health.master_node === nodeId, // Kiểm tra node hiện tại có phải master không
+                    is_master: health.master_node === nodeId,
                     http_address: node.http ? node.http.publish_address : 'N/A',
-                    // Lấy một vài stats cơ bản
                     jvm_heap_used_percent: nodeStat && nodeStat.jvm && nodeStat.jvm.mem ? nodeStat.jvm.mem.heap_used_percent : (node.jvm && node.jvm.mem ? node.jvm.mem.heap_used_percent : 'N/A'),
-                    os_cpu_percent: nodeStat && nodeStat.os && nodeStat.os.cpu ? nodeStat.os.cpu.percent : (node.os && node.os.cpu ? node.os.cpu.percent : 'N/A'),
-                    // total_http_opened: nodeStat && nodeStat.http ? nodeStat.http.total_opened : 'N/A'
+                    os_cpu_percent: nodeStat && nodeStat.os && nodeStat.os.cpu ? nodeStat.os.cpu.percent : (node.os && node.os.cpu ? node.os.cpu.percent : 'N/A')
                 });
             }
         }
 
         res.json({
             cluster_name: health.cluster_name,
-            status: health.status, // green, yellow, red
+            status: health.status,
             number_of_nodes: health.number_of_nodes,
             number_of_data_nodes: health.number_of_data_nodes,
             active_primary_shards: health.active_primary_shards,
@@ -47,12 +44,6 @@ exports.getNodesStatus = async (req, res) => {
 };
 
 exports.getRequestStats = async (req, res) => {
-    // Đây là phần phức tạp.
-    // 1. Lấy từ Elasticsearch: _nodes/stats/http sẽ cho total_opened connections, không phải số query.
-    // 2. Phân tích log Nginx: Cần cấu hình Nginx ghi log chi tiết và có một tiến trình phân tích log đó.
-    // 3. Dùng tool giám sát chuyên dụng: Prometheus + Elasticsearch Exporter + Nginx Exporter, rồi query từ Grafana.
-
-    // Ví dụ đơn giản (không chính xác cho "request của từng node"):
     try {
         const nodesStats = await esService.getNodesStats();
         let totalRequests = 0;
@@ -80,7 +71,7 @@ exports.getRequestStats = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password'); // Không trả về password
+        const users = await User.find().select('-password');
         res.json(users);
     } catch (error) {
         res.status(500).json({ message: 'Failed to get users.', error: error.message });
@@ -111,7 +102,6 @@ exports.deleteUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
-        // Xóa lịch sử tìm kiếm của user này (tùy chọn)
         await SearchHistory.deleteMany({ userId: userId });
         res.json({ message: 'User deleted successfully.' });
     } catch (error) {

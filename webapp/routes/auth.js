@@ -1,7 +1,7 @@
 // webapp/routes/auth.js
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/authController'); // Bạn cần tạo file controller này
+const authController = require('../controllers/authController');
 
 // Trang hiển thị form đăng nhập (GET)
 router.get('/login', authController.getLoginPage);

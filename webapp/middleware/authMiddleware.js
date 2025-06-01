@@ -7,7 +7,6 @@ exports.isAuthenticated = (req, res, next) => {
     if (req.session && req.session.user) {
         return next();
     }
-    // Nếu không có session, kiểm tra JWT token (nếu bạn dùng API token-based)
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
@@ -31,7 +30,7 @@ exports.isAuthenticated = (req, res, next) => {
             return res.status(401).json({ message: 'Chưa xác thực. Token không hợp lệ' });
         }
     } else {
-        // Nếu là API (fetch, XHR, hoặc Accept: application/json) thì trả về JSON, còn lại thì redirect
+
         if (req.xhr || req.headers.accept?.includes('application/json')) {
             return res.status(401).json({ message: 'Chưa xác thực.' });
         }
