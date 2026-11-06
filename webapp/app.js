@@ -6,7 +6,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const config = require('./config');
 const Product = require('./models/productModel');
-const { indexProduct, createProductIndex, bulkIndexProducts } = require('./services/elasticsearchService');
+const { indexProduct, createProductIndex, bulkIndexProducts, ensureProductsIndex } = require('./services/elasticsearchService');
 
 const mainRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
@@ -75,6 +75,8 @@ app.listen(config.port, () => {
     console.log(`Server is running on http://localhost:${config.port}`);
     console.log(`Connecting to Elasticsearch via: ${config.elasticsearchHost}`);
     console.log(`Connecting to MongoDB via: ${config.mongoURI}`);
+    // Ensure ES index exists on startup
+    ensureProductsIndex();
 });
 
 async function initialSyncMongoToES() {

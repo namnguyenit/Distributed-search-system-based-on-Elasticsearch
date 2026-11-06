@@ -19,52 +19,64 @@ async function checkConnection() {
 
 checkConnection();
 
-async function createProductIndex() {
-    try {
-        const indexExists = await esClient.indices.exists({ index: PRODUCT_INDEX });
-        if (!indexExists) {
-            console.log(`Creating index: ${PRODUCT_INDEX}`);
-            await esClient.indices.create({
-                index: PRODUCT_INDEX,
-                body: {
-                    mappings: {
-                        properties: {
-                            name: {
-                                type: 'text',
-                                analyzer: 'standard',
-                                fields: {
-                                    keyword: { type: 'keyword', ignore_above: 256 },
-                                    suggest: { type: 'completion' }
-                                }
-                            },
-                            description: { type: 'text', analyzer: 'standard' },
-                            category: {
-                                type: 'text',
-                                analyzer: 'standard',
-                                fields: { keyword: { type: 'keyword', ignore_above: 256 } }
-                            },
-                            tags: {
-                                type: 'text',
-                                analyzer: 'standard',
-                                fields: { keyword: { type: 'keyword', ignore_above: 256 } }
-                            },
-                            brand: {
-                                type: 'text',
-                                analyzer: 'standard',
-                                fields: { keyword: { type: 'keyword', ignore_above: 256 } }
-                            },
-                            price: { type: 'float' },
-                            imageUrl: { type: 'keyword', index: false },
-                            stock: { type: 'integer' },
-                            mongoId: { type: 'keyword' }
+async function ensureProductsIndex(options = { waitForStatus: 'yellow', retries: 3 }) {
+    const { waitForStatus = 'yellow', retries = 3 } = options || {};
+    let attempts = 0;
+    while (attempts <= retries) {
+        try {
+            const exists = await esClient.indices.exists({ index: PRODUCT_INDEX });
+            if (!exists) {
+                await esClient.indices.create({
+                    index: PRODUCT_INDEX,
+                    body: {
+                        settings: {
+                            number_of_shards: 5,
+                            number_of_replicas: 1
+                        },
+                        mappings: {
+                            properties: {
+                                // Completion field at top-level for suggestions
+                                nameSuggest: { type: 'completion' },
+                                name: {
+                                    type: 'text',
+                                    analyzer: 'standard',
+                                    fields: {
+                                        keyword: { type: 'keyword', ignore_above: 256 },
+                                        // Also provide nested completion under name.suggest for compatibility
+                                        suggest: { type: 'completion' }
+                                    }
+                                },
+                                description: { type: 'text', analyzer: 'standard' },
+                                category: { type: 'keyword' },
+                                tags: { type: 'keyword' },
+                                brand: { type: 'keyword' },
+                                price: { type: 'float' },
+                                imageUrl: { type: 'keyword', index: false },
+                                stock: { type: 'integer' },
+                                mongoId: { type: 'keyword' }
+                            }
                         }
                     }
-                }
-            });
-            console.log(`Index ${PRODUCT_INDEX} created successfully.`);
-        } else {
-            console.log(`Index ${PRODUCT_INDEX} already exists.`);
+                });
+            }
+            // Wait for cluster/index to become available
+            await esClient.cluster.health({ index: PRODUCT_INDEX, wait_for_status: waitForStatus, timeout: '60s' });
+            return true;
+        } catch (e) {
+            attempts += 1;
+            if (attempts > retries) {
+                console.error('ensureProductsIndex failed:', e.meta ? e.meta.body : e);
+                return false;
+            }
+            await new Promise(r => setTimeout(r, 1000 * attempts));
         }
+    }
+}
+
+// Keep existing createProductIndex but delegate to ensureProductsIndex
+async function createProductIndex() {
+    try {
+        await ensureProductsIndex();
     } catch (error) {
         console.error(`Error creating index ${PRODUCT_INDEX}:`, error.meta ? error.meta.body : error);
     }
@@ -73,6 +85,7 @@ createProductIndex();
 
 async function indexProduct(product) {
     try {
+        await ensureProductsIndex();
         const nameParts = product.name ? product.name.split(' ').filter(p => p.length > 0) : [];
         const suggestionInputs = product.name ? [product.name, ...nameParts] : [];
 
@@ -89,7 +102,6 @@ async function indexProduct(product) {
             imageUrl: product.imageUrl,
             stock: product.stock,
             mongoId: product._id ? product._id.toString() : product.mongoId
-            // removed createdAt and updatedAt due to date parsing errors
         };
 
         await esClient.index({
@@ -103,8 +115,10 @@ async function indexProduct(product) {
         console.error('Lỗi khi index sản phẩm:', error.meta ? error.meta.body : error);
     }
 }
+
 async function updateProductInES(productId, productData) {
     try {
+        await ensureProductsIndex();
         await esClient.update({
             index: PRODUCT_INDEX,
             id: productId.toString(),
@@ -118,6 +132,7 @@ async function updateProductInES(productId, productData) {
 
 async function deleteProductFromES(productId) {
     try {
+        await ensureProductsIndex();
         await esClient.delete({
             index: PRODUCT_INDEX,
             id: productId.toString()
@@ -130,6 +145,7 @@ async function deleteProductFromES(productId) {
 
 async function searchProducts(queryText, from = 0, size = 10) {
     try {
+        await ensureProductsIndex();
         const textSearchFields = ["name^3", "description^1", "category^2", "tags^2", "brand^2"];
         const queryClauses = [];
 
@@ -158,7 +174,7 @@ async function searchProducts(queryText, from = 0, size = 10) {
             });
         }
 
-        const response = await esClient.search({
+        const doSearch = async () => esClient.search({
             index: PRODUCT_INDEX,
             from,
             size,
@@ -179,7 +195,17 @@ async function searchProducts(queryText, from = 0, size = 10) {
             }
         });
 
-        return response.hits;
+        try {
+            const response = await doSearch();
+            return response.hits;
+        } catch (err) {
+            if (err?.meta?.body?.error?.type === 'index_not_found_exception') {
+                await ensureProductsIndex();
+                const response = await doSearch();
+                return response.hits;
+            }
+            throw err;
+        }
     } catch (error) {
         console.error('Lỗi khi tìm kiếm sản phẩm:', error.meta ? error.meta.body : error);
         throw error;
@@ -188,7 +214,8 @@ async function searchProducts(queryText, from = 0, size = 10) {
 
 async function getSuggestions(fieldName = 'nameSuggest', prefixText, size = 5) {
     try {
-        const response = await esClient.search({
+        await ensureProductsIndex();
+        const doSuggest = async () => esClient.search({
             index: PRODUCT_INDEX,
             body: {
                 _source: ["name", "imageUrl", "price", "category", "description", "stock", "brand"],
@@ -205,8 +232,17 @@ async function getSuggestions(fieldName = 'nameSuggest', prefixText, size = 5) {
                 }
             }
         });
-
-        return response.suggest?.['product-suggestions']?.[0]?.options || [];
+        try {
+            const response = await doSuggest();
+            return response.suggest?.['product-suggestions']?.[0]?.options || [];
+        } catch (err) {
+            if (err?.meta?.body?.error?.type === 'index_not_found_exception') {
+                await ensureProductsIndex();
+                const response = await doSuggest();
+                return response.suggest?.['product-suggestions']?.[0]?.options || [];
+            }
+            throw err;
+        }
     } catch (error) {
         console.error('Lỗi khi lấy gợi ý sản phẩm:', error.meta ? error.meta.body : error);
         throw error;
@@ -215,10 +251,12 @@ async function getSuggestions(fieldName = 'nameSuggest', prefixText, size = 5) {
 
 async function bulkIndexProducts(products) {
     if (!products.length) return;
+    await ensureProductsIndex();
     const body = products.flatMap(product => [
         { index: { _index: PRODUCT_INDEX, _id: product._id.toString() } },
         {
             name: product.name,
+            nameSuggest: { input: (product.name || '').split(' ').filter(Boolean).concat([product.name || '']).filter(Boolean) },
             description: product.description,
             category: product.category,
             tags: product.tags,
@@ -227,7 +265,6 @@ async function bulkIndexProducts(products) {
             stock: product.stock,
             imageUrl: product.imageUrl,
             mongoId: product._id.toString()
-            // Đã bỏ "name.suggest"
         }
     ]);
 
@@ -267,6 +304,7 @@ module.exports = {
     esClient,
     checkConnection,
     createProductIndex,
+    ensureProductsIndex,
     indexProduct,
     updateProductInES,
     deleteProductFromES,
